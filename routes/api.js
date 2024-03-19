@@ -403,7 +403,7 @@ router.get('/getAllUser', async (req, res) => {
 })
 
 const Transporter = require('../config/common/mail')
-router.post('/register-send-email', Upload.single('avatar'), async (req, res) => {
+router.post('/register-send-email', Upload.single('avartar'), async (req, res) => {
     try {
         const data = req.body;
         const { file } = req
@@ -412,7 +412,7 @@ router.post('/register-send-email', Upload.single('avatar'), async (req, res) =>
             password: data.password,
             email: data.email,
             name: data.name,
-            avatar: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+            avartar: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
             //url avatar http://localhost:3000/uploads/filename
         })
         const result = await newUser.save()

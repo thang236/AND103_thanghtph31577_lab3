@@ -14,7 +14,7 @@ const addAccount = async () => {
         formData.append('email', email.value);
         formData.append('avartar', avartar.files[0]);
 
-        const response = await fetch('http://localhost:3000/api/add-user', {
+        const response = await fetch('http://localhost:3000/api/register-send-email', {
             method: 'POST',
             body: formData
         });

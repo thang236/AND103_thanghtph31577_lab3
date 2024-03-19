@@ -114,6 +114,7 @@ const addFruit = async (event) => {
 
 const deleteFruit = (event) => {
     const id = event.target.dataset.id;
+    console.log(id);
     let result = confirm('Bạn có muốn xóa hay không ?');
     if (result) {
         fetch('http://localhost:3000/api/destroy-fruit-by-id/' + id, {

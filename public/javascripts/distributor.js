@@ -142,7 +142,7 @@ const editDistributor = (event) => {
 
 list.addEventListener('click', event => {
     if (event.target.classList.contains('delete-btn')) {
-        deleteFruit(event)
+        deleteDistributor(event)
     }
     if (event.target.classList.contains('edit-btn')) {
         editDistributor(event)
