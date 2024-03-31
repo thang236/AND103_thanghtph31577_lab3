@@ -331,7 +331,7 @@ router.post('/add-fruit-with-file-image', Upload.array('image', 5), async (req, 
             description: data.description,
             id_distributor: data.id_distributor
         }); //Tạo một đối tượng mới
-        const result = await newfruit.save(); //Thêm vào database
+        const result = (await newfruit.save()).populate("id_distributor"); //Thêm vào database
         if (result) {// Nếu thêm thành công result !null trả về dữ liệu
             res.json({
                 "status": 200,
@@ -469,6 +469,32 @@ router.post('/login', async (req, res) => {
             res.json({
                 "status": 400,
                 "messenger": "Lỗi, đăng nhập không thành công",
+                "data": []
+            })
+        }
+    } catch (error) {
+        console.log(error);
+    }
+})
+
+//search Distributor
+router.get('/search-distributor', async (req, res) => {
+    try {
+        const key = req.query.key
+
+        const data = await Distributors.find({ name: { "$regex": key, "$options": "i" } })
+            .sort({ createdAt: -1 });
+
+        if (data) {
+            res.json({
+                "status": 200,
+                "messenger": "Thành công",
+                "data": data
+            })
+        } else {
+            res.json({
+                "status": 400,
+                "messenger": "Lỗi, không thành công",
                 "data": []
             })
         }
