@@ -198,11 +198,15 @@ router.put('/update-fruit-by-id/:id', Upload.array('image', 5), async (req, res)
 
 
 
-        const urlsImage =
-            files.map((file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`);
+        let url1;
         const updatefruit = await Furits.findById(id)
-        files.map((file) => console.log(123, file.filename));
-        console.log(345, updatefruit.image);
+        if (files && files.length > 0) {
+            url1 = files.map((file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`);
+
+        }
+        if (url1 == null) {
+            url1 = updatefruit.image;
+        }
 
         let result = null;
         if (updatefruit) {
@@ -212,11 +216,11 @@ router.put('/update-fruit-by-id/:id', Upload.array('image', 5), async (req, res)
                 updatefruit.status = data.status ?? updatefruit.status,
 
 
-                updatefruit.image = urlsImage ?? updatefruit.image,
+                updatefruit.image = url1,
 
                 updatefruit.description = data.description ?? updatefruit.description,
                 updatefruit.id_distributor = data.id_distributor ?? updatefruit.id_distributor,
-                result = await updatefruit.save();
+                result = (await updatefruit.save()).populate("id_distributor");;
         }
         if (result) {
             res.json({
@@ -271,7 +275,7 @@ router.put('/update-distributor-by-id/:id', async (req, res) => {
 router.delete('/destroy-fruit-by-id/:id', async (req, res) => {
     try {
         const { id } = req.params
-        const result = await Furits.findByIdAndDelete(id);
+        const result = (await Furits.findByIdAndDelete(id)).populate('id_distributor');
         if (result) {
             res.json({
                 "status": 200,
@@ -311,6 +315,8 @@ router.delete('/destroy-distributor-by-id/:id', async (req, res) => {
         console.log(error);
     }
 })
+
+
 
 //upload image
 router.post('/add-fruit-with-file-image', Upload.array('image', 5), async (req, res) => {
@@ -500,6 +506,53 @@ router.get('/search-distributor', async (req, res) => {
         }
     } catch (error) {
         console.log(error);
+    }
+})
+
+//lab 7
+//load more
+router.get('/get-page-fruit', async (req, res) => {
+    //Auten
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) return res.sendStatus(401)
+    let payload;
+    JWT.verify(token, SECRETKEY, (err, _payLoad) => {
+        if (err instanceof JWT.TokenExpiredError) return res.sendStatus(401)
+        if (err) return res.sendStatus(403)
+        payload = _payLoad
+    })
+    let perPage = 6;
+    let page = req.query.page || 1;
+    let skip = (perPage * page) - perPage;
+    let count = await Furits.find().count();
+    const name = { "$regex": req.query.name ?? "", "$options": "i" }
+
+    const price = { $gte: req.query.price ?? 0 }
+    console.log(222, typeof (req.query.sort));
+
+    const sort = { price: Number(req.query.sort) ?? 1 }
+    try {
+        console.log(1111111, name + "price" + req.query.sort);
+        const data = await Furits.find({ name: name, price: price })
+            .populate('id_distributor')
+            .sort(sort)
+            .skip(skip)
+            .limit(perPage)
+        res.json({
+            "status": 200,
+            "messenger": "Danh sách fruit",
+            "data": {
+                "data": data,
+                "currentPage": Number(page),
+                "totalPage": Math.ceil(count / perPage)
+            }
+        }
+        )
+
+    } catch (err) {
+        console.log(err);
+
     }
 })
 
